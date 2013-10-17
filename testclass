@@ -1,0 +1,53 @@
+// example: one class, two objects
+#include <iostream>
+#include <armadillo>
+using namespace std;
+using namespace arma;
+
+class testklasse {
+    double M;
+    //vec r, v;
+  public:
+    void set_planetdata (double);//,vec,vec);
+    double area () {return M;}
+};
+
+void testklasse::set_planetdata (double a){    //, vec b,vec c) {
+  M = a;
+  //r = b;
+  //v = c;
+}
+
+int main () {
+  int dim=2;
+  testklasse rect;//, rectb;
+  //vec r=zeros(dim); r(0)=1;   r(1)=3;
+  //vec v=zeros(dim); v(0)=1.4; v(1)=1;
+  double jupitermasse=10.0;
+  rect.set_planetdata (jupitermasse);//,r,v);
+  cout << "rect area: " << rect.area() << endl;
+  //rectb.set_bananer (5,6);
+
+  //cout << "rectb area: " << rectb.area() << endl;
+  return 0;
+}
+#if 0
+
+
+#include <iostream>
+using namespace std;
+
+class testklasse{
+        double x, y;
+      public:
+        void set_values(double,double);
+        double sum(){return x+y;}
+}
+
+int main(){
+    testklasse utregning1, utregning2;
+    utregning1.set_values(3.2,1.0);
+    cout << utregning1.sum();
+    return 0;
+}
+#endif
