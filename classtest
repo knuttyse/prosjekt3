@@ -1,0 +1,68 @@
+#include <iostream>
+#include <armadillo>
+using namespace std;
+using namespace arma;
+
+double G =6.67;
+
+vec F(vec r1, vec r2, double m1, double m2){
+   vec r= r2-r1;
+   double rabs=sqrt(r(0)*r(0)+r(1)*r(1));
+   double force=G*m1*m2/(rabs*rabs*rabs);
+   return force*r;}
+
+class planeter{
+
+
+    public:
+    double m;
+    vec r;
+    vec v;
+     void verdier(double, vec, vec);
+     void posvel(vec,vec);
+
+};
+
+void planeter::verdier(double M,vec r0, vec v0){
+    m=M;
+    r=r0;
+    v=v0;}
+
+void planeter::posvel(vec pos, vec vel){
+    vec r =pos;
+    vec v =vel;
+}
+
+int main(){
+    int N=2;
+    double mass1=3.2;
+    double mass2=7;
+    vec pos1= zeros(N);
+    pos1(0)=10.0;
+    pos1(1)=3.0;
+
+    vec vel1= zeros(N);
+    vel1(0)=5;
+    vel1(1)=7;
+
+    vec pos2= zeros(N);
+    pos2(0)=18.0;
+    pos2(1)=16.0;
+
+    vec vel2= zeros(N);
+    vel2(0)=2.0;
+    vel2(1)=1.0;
+
+    planeter body1;
+    planeter body2;
+
+    body1.verdier(mass1, pos1, vel1);
+    body1.posvel(body1.r, body1.v);
+
+    body2.verdier(mass2, pos2, vel2);
+    body2.posvel(body2.r, body2.v);
+
+    vec Force_test = F(body1.r,body2.r, body1.m,body2.m);
+    cout << Force_test;
+    return 0;
+}
