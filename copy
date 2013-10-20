@@ -1,21 +1,22 @@
 #include <iostream>
 #include <armadillo>
-#include "constants.h"
 using namespace std;
 using namespace arma;
 
+double G =6.67;
 
-double acc(double M,vec r){
-     absr=abs(r);
-     vec a=G*M/(absr*absr*absr)*r;
-     return a;
- }
+vec F(vec r1, vec r2, double m1, double m2){
+   vec r= r2-r1;
+   double rabs=sqrt(r(0)*r(0)+r(1)*r(1));
+   double force=G*m1*m2/(rabs*rabs*rabs);
+   return force*r;//force on m1
+}
 
-double RK4(double M,double t,vec z, double dt, dzdt){
-    double dtdiv2=dt/2; // dt/2 is used a couple of times
+
+void RK4(mat r, mat v, vec z, double dt,double dtdiv2){
     double thalf=t+dtdiv2; //t+dt/2
     double tnew=t+dt;
-    double K1 =acc(M, z);
+    double K1 =(M, z);
     double zhalf=z+dtdiv2*K1; //z+dt/2
     double K2=acc(thalf, zhalf);
     double zhalf_=z+dtdiv2*K2; //z+dt/2*K2, _ in zhalf_ instead of z^\tilde
@@ -24,23 +25,108 @@ double RK4(double M,double t,vec z, double dt, dzdt){
     double K4=acc(tnew,znew);
     znew = z + dt/6.0*(K1+K2+K3+K4);
     return znew;
+
+class planeter{
+    public:
+    double m;
+    vec r;
+    vec v;
+    void verdier(double, vec, vec);
+    void posvelacc(vec,vec,vec);
+
+    vec force(int objektnummer){
+        vec Fvec=zeros(N);
+        for(int i =0;i<n;i++){
+            if(i != obljektnummer){
+                Fvec += F();
+            }
+        }
     }
-
-class solver{
-
 
 };
 
-int main(){
-    int dim=2; //dimention of problem
-    T=5; //
-    double G= 6.67428e-11;//gravitational constant
-    vec M= zeros(10); //vector for masses
-    mat a=zeros(n,);
-    //r.jupiter()= RK4(M(i),double t,vec z, double dt, dzdt);
-    //Sun, mercury, venus, earth, mars, jupiter, saturn, uranus, neptune, pluto
-    M(0)=2.0e30; M(1)=2.4e23; M(2)=4.9e24; M(3)=6.0e24; M(4)=6.6e23;
-    M(5)=1.9e27; M(6)=5.5e26; M(7)=8.8e25; M(8)=1.03e26; M(9)=1.31e22;
+void planeter::verdier(double M,vec r0, vec v0){
+    m=M;
+    r=r0;
+    v=v0;}
 
+void planeter::posvelacc(vec pos, vec vel,vec force){
+    vec r= pos;
+    vec v= vel;
+    vec F= force;
+}
+
+int main(){
+    int N=2;//dimensjoner
+    double mass1=3.2;
+    double mass2=7;
+    double T= 2.0;
+    double dt=T/(N-1)
+    double dtdiv2=dt/2;
+    
+    cout<<"skriv inn antall punkter i arrayen, int n="<<endl;
+    cin >> n;
+    cout<<"skriv inn antall legemer(inkludert sola) i systemet, int k="<<endl;
+    int k;
+    cin>> k;
+    vec M=zeros(k); //massen til planetene
+    mat V= mat(N*k,n);//hastighetsmatrise
+    mat R= mat(N*k,n);//posisjonmatrise
+
+    int planet_counter=1;
+
+    int merkur;
+    cout<<"Merkur?";
+    cin>> merkur;
+
+    if(merkur==0){
+        V(counter*N,0)=5.0;
+        V(counter*N+1,0)=3.0;
+        R(counter*N,0)=20.0;
+        R(counter*N+1,0)=10.0;
+        planet_counter +=1;
+    }
+
+    int venus;
+    cout<<"Venus?";
+    cin>> venus;
+
+    if(venus==0){
+        V(counter*N,0)=10.0;
+        V(counter*N+1,0)=6.0;
+        R(counter*N,0)=40.0;
+        R(counter*N+1,0)=20.0;
+        planet_counter +=1;
+    }
+    int earth;
+    cout<<"Earth?";
+    cin>> Earth;
+
+    if(earth==0){
+        V(counter*N,0)=10.0;
+        V(counter*N+1,0)=6.0;
+        R(counter*N,0)=40.0;
+        R(counter*N+1,0)=20.0;
+        planet_counter +=1;
+    }
+
+    for(int i =0;i<n;i++){
+        V()RK4(R,V,M);
+    }
+}
+#if 0
+    planeter body1;
+    planeter body2;
+
+    body1.verdier(mass1, pos1, vel1);
+    body1.posvel(body1.r, body1.v);
+
+    body2.verdier(mass2, pos2, vel2);
+    body2.posvel(body2.r, body2.v);
+
+
+    //vec Force_test = F(body1.r,body2.r, body1.m,body2.m);
+    cout << planeter.[1]//Force_test;
+#endif
     return 0;
 }
