@@ -38,13 +38,11 @@ def extract(filename):
 
         if counter>1:
             for j in range(k*N):
-                print j, "  ",  i
                 t[i]=float(words[0])
                 matrix[i, j]=float(words[j+1])
             i+=1
         counter+=1
     t=t[0:i]
-    print t
     matrix=matrix[0:i,:]
     
     infile.close()
@@ -58,19 +56,23 @@ savefile='../../doc/plot%sn%dT%g.png' % (oppgave, n,T)
 
 hold('on')
 for i in range(k): 
-    plot(matrix[:,i*N],matrix[:,i*N+1],markersize=0.2,legend=planets[i],title=('n=%d steps, T=%7.2f days' % (n,T) ),xlabel='x [AU]',ylabel='y [AU]',hardcopy= savefile)
+    plot(matrix[:,i*N],matrix[:,i*N+1],'o',markersize=0.2,legend=planets[i],title=('n=%d steps, T=%7.2f days' % (n,T) ),xlabel='x [AU]',ylabel='y [AU]',hardcopy= savefile)
    
-if oppgave=="c":
-    theta=linspace(0,2*pi)
-    x=0.9976332324*cos(theta)
-    y=0.9976332324*sin(theta)
-    plot(x,y,'k')
+if (oppgave=="c") or (oppgave=="e"):
+    theta=linspace(0,2*pi,200)
+    x=cos(theta)
+    y=sin(theta)
+    plot(x,y,'k',hardcopy= savefile)
+
 raw_input()
+
 hold('off')
 E_k,E_pot,L= extract2(readfile2)
-plot(t,E_k,legend='E_k',xlabel='time [days]',ylabel='energy [Msun*AU^2/day^2]',hardcopy='../../doc/ek%s%d%g.png'% (oppgave, n,T) )
+plot(t,E_k,legend='E_k',xlabel='time [days]',ylabel='energy [Msun*AU^2/day^2]',title=('n=%d steps, T=%7.2f days' % (n,T) ),hardcopy='../../doc/ek%s%d%g.png'% (oppgave, n,T) )
 raw_input()
-plot(t,E_pot,legend='E_pot',xlabel='time [days]',ylabel='energy [Msun*AU^2/day^2]',hardcopy='../../doc/ep%s%d%g.png' % (oppgave, n,T))
+plot(t,E_pot,legend='E_pot',xlabel='time [days]',ylabel='energy [Msun*AU^2/day^2]',title=('n=%d steps, T=%7.2f days' % (n,T) ),hardcopy='../../doc/ep%s%d%g.png' % (oppgave, n,T))
 raw_input()
-plot(t,L,legend='L',xlabel='time [days]',ylabel='angular momentum [Msun*AU^2/day]',hardcopy='../../doc/L%s%d%g.png' % (oppgave, n,T) )
+plot(t,L,legend='L',xlabel='time [days]',ylabel='angular momentum [Msun*AU^2/day]',title=('n=%d steps, T=%7.2f days' % (n,T) ), hardcopy='../../doc/L%s%d%g.png' % (oppgave, n,T) )
+raw_input()
+plot(t,E_pot+E_k,legend='E_tot', xlabel='time [days]', ylabel='energy [Msun*AU^2/day^2]',title=('n=%d steps, T=%7.2f days' % (n,T) ),hardcopy='../../doc/e%s%d%g.png' % (oppgave, n,T))
 raw_input()
