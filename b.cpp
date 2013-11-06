@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <armadillo>
 #include <vector>
@@ -37,6 +36,7 @@ class systemet{
     public:
     int N;
     int k;
+    int task;
     double dt;
     double dtdiv2;
     double dtdiv6;
@@ -47,7 +47,7 @@ class systemet{
     vec m;
     mat r;
     mat v;
-    void konstanter(int,int,double,double,double,vec);
+    void konstanter(int,int,int,double,double,double,vec);
     void posvel(mat,mat);
     mat doubleRK4();
     mat acc(mat);
@@ -56,7 +56,7 @@ class systemet{
     void bevarte_stoerrelser();
 };
 
-void systemet::konstanter(int dimensjoner, int ant_planeter, double step, double stephalf, double stepsixth, vec M){
+void systemet::konstanter(int dimensjoner, int ant_planeter, int tall,double step, double stephalf, double stepsixth, vec M){
     N=dimensjoner; // x, y (, z)
     k=ant_planeter;
     dt=step; // tidssteg
@@ -67,6 +67,7 @@ void systemet::konstanter(int dimensjoner, int ant_planeter, double step, double
     for(int i=0;i<k;i++){
         total_mass += m(i);
     }
+    task=tall;
 }
 
 void systemet::posvel(mat position, mat velocity){
@@ -93,6 +94,10 @@ mat systemet::acc(mat posisjon){
             double forceconstant=G/(r_abs*r_abs*r_abs); // k= G/|r|^3
             double forceconstanti=-m(j)*forceconstant; // Disse 'konstantene' regnes ut paa forhaand
             double forceconstantj=m(i)*forceconstant;  // for spare operasjoner lengre ned.
+            if( (i!=1) && (task==0 ) ){
+                forceconstanti=0*forceconstant;
+            }
+
 
             // Merk at fortegnet settes i disse to linjene!
             // a_ij skal peke på legeme j. r_vec peker på planet i. Da må a(i,:) vaere antiparalell
@@ -136,6 +141,10 @@ mat systemet::doubleRK4(){
     mat R4= vnew;
     v=v+dtdiv6*(V1+2*V2+2*V3+V4);
     r=r+dtdiv6*(R1+2*R2+2*R3+R4);//endring
+    if(task!=1){//hvis solen er fiksert i origo
+        v.row(0)=zeros<mat>(1,N);
+        r.row(0)=zeros<mat>(1,N);
+    }
     return r;
 }
 
@@ -195,6 +204,11 @@ void systemet::bevarte_stoerrelser(){
 
 int main(){
     cout.precision(16);
+
+    cout << "skal sola stå i ro? ja: 0, nei: 1"<<endl <<"for oppgave d: 2"<<endl;
+    int task;
+    cin >> task;
+
     //Hvis man skal legge til ytteligere objekter (for eksempel 'rocket'), må man legge til:
     // rocket i listen under og legge til:
     // rocket.set_values(x [km], y [km], v0x[km/s], v0y[km/s], mass);
@@ -206,10 +220,18 @@ int main(){
     sun.set_values(0.0, 0.0, 0.0, 0.0, 1988500e24);// Data jeg hentet fra NASA var relativt til solen.
     mercury.set_values(4.186328367979202E+07,-4.639488984492734E+07,2.649100893125037E+01, 3.496360017130548E+01,0.3302e24);
     venus.set_values(9.107058018777086E+07, -5.942962959851662E+07, 1.892621227368753E+01, 2.918642007512648E+01,48.685e23);
-    earth.set_values(1.401314535653816E+08, 5.135065473668917E+07, -1.074300988397089E+01, 2.785075899706422E+01, 5.97219e24);
-    //earth.set_values(1.401314535653816E+09, 5.135065473668917E+07, 0, 1.38e-5, 5.97219e24);//oppgave d
+
+    if(task==0){
+        earth.set_values( 1.49597870700E+08, 0, 0, 29.772, 5.97219e24);//oppgave c
+    }
+    if(task==1){// standard
+        earth.set_values(1.401314535653816E+08, 5.135065473668917E+07, -1.074300988397089E+01, 2.785075899706422E+01, 5.97219e24);
+    }
+    if(task==2){
+        earth.set_values( 1.49597870700E+08, 0, 0, 42.1, 5.97219e24);//oppgave d
+    }
     mars.set_values(-1.224534489688664E+08, 2.113985089132638E+08, -2.004968649521087E+01, -1.008362569300063E+01 ,6.4185e23);
-    jupiter.set_values(-1.100325291552387E+08, 7.644745914375829E+08, -1.310155701837505E+01, -1.242878877322166E+00, 1898.13e24);
+    jupiter.set_values(-1.100325291552387E+08, 7.644745914375829E+08, -1.310155701837505E+01, -1.242878877322166E+00, 1898.13e24);//original m=1898.13e24
     saturn.set_values(-1.072870309112834E+09, -1.011008964947510E+09, 6.090460191409890E+00, -7.056500798998084E+00,5.68319e26);
     uranus.set_values(2.948078131100535E+09, 5.430764934436175E+08, -1.293465578556454E+00, 6.377544079287039E+00,86.8103e24);
     neptune.set_values(4.032757532991157E+09, -1.962430340115208E+09, 2.332592485566963E+00, 4.917320763804554E+00,102.41e24);
@@ -323,25 +345,26 @@ int main(){
 
     systemet solar; // Lager et objekt kalt solar
     // konstanter tilhoerende systemet.
-    solar.konstanter(N, k, dt, dtdiv2, dtdiv6, M);
+    solar.konstanter(N, k, task, dt, dtdiv2, dtdiv6, M);
     solar.posvel(R, V);
-    //--------------------------------------------------------
-    // Justerer hastighetene med hastigheten til massesenteret.
-    // Da blir det mye enklere å regne ut angulaermoment.
+    if (task==1){
+        //--------------------------------------------------------
+        // Justerer hastighetene med hastigheten til massesenteret.
+        // Da blir det mye enklere å regne ut angulaermoment.
 
-    mat CM=solar.massesenter();
-    mat V_CM= mat(1,N);
-    for(int i=0;i<k;i++){
+        mat CM=solar.massesenter();
+        mat V_CM= mat(1,N);
+        for(int i=0;i<k;i++){
         V_CM += solar.m(i)/(solar.total_mass) * V.row(i);
+        }
+        for(int i=0;i<k;i++){
+            R.row(i)-=CM;
+            V.row(i)-=V_CM; // trekker fra hastighetsvektoren til
+                           // massesenteret fra hver hastighetsvektor
+        }
+        solar.posvel(R, V); // fra naa av heter det solar.r og solar.v
+        //------------------------------------------------------------
     }
-    for(int i=0;i<k;i++){
-        R.row(i)-=CM;
-        V.row(i)-=V_CM; // trekker fra hastighetsvektoren til
-                        // massesenteret fra hver hastighetsvektor
-    }
-    solar.posvel(R, V); // fra naa av heter det solar.r og solar.v
-    //------------------------------------------------------------
-
     int delta;
     cout << "hvor mange dt skal det vaere mellom hver gang programmet skriver ut?";
     cin>> delta;
@@ -388,14 +411,11 @@ int main(){
         printvector(N*j+1)=solar.r(j,0);
         printvector(N*j+2)=solar.r(j,1);
     }
-
     myfile << printvector; // faar alt på en linje
     solar.bevarte_stoerrelser();
     yourfile << solar.E_k<<"  "<< solar.E_pot <<"  "<< solar.L;
     // ----------------------------------------------------------------
     myfile.close();
-    myfile.close();
-    //oppgave d:
-    cout <<endl<< sqrt(2*G*sun.m*earth.m/sqrt((earth.r0x*earth.r0x+earth.r0y*earth.r0y)));
+    yourfile.close();
     return 0;
 }
